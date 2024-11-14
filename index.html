@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Список задач</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <h1>Мой To-Do List</h1>
+        <textarea id="taskInput" placeholder="Введите задачу"></textarea>
+        <button onclick="addTask()">Добавить задачу</button>
+        <button onclick="clearAllTasks()">Очистить все задачи</button>
+        <button onclick="toggleTheme()">Переключить тему</button>
+        <ul id="taskList"></ul>
+    </div>
+
+    <script>
+        // Функция добавления задачи
+        function addTask() {
+            const taskInput = document.getElementById('taskInput');
+            const taskText = taskInput.value.trim();
+
+            if (taskText === '') {
+                alert('Введите задачу!');
+                return;
+            }
+
+            const taskList = document.getElementById('taskList');
+            
+            // Получаем текущую дату и время
+            const currentDate = new Date().toLocaleString();
+
+            // Создание нового элемента списка
+            const newTask = document.createElement('li');
+            
+            // Чекбокс для отметки выполнения
+            const checkBox = document.createElement('input');
+            checkBox.type = 'checkbox';
+            checkBox.className = 'taskCheckbox';
+            checkBox.onclick = () => toggleTaskCompletion(newTask);
+            newTask.appendChild(checkBox);
+
+            // Текст задачи
+            const taskContent = document.createElement('span');
+            taskContent.textContent = taskText;
+            newTask.appendChild(taskContent);
+
+            // Время добавления задачи
+            const taskTime = document.createElement('span');
+            taskTime.className = 'taskTime';
+            taskTime.textContent = ` - Добавлено: ${currentDate}`;
+            newTask.appendChild(taskTime);
+
+            // Кнопка для удаления задачи
+            const removeButton = document.createElement('button');
+            removeButton.textContent = 'Удалить';
+            removeButton.className = 'remove';
+            removeButton.onclick = () => removeTask(newTask);
+            newTask.appendChild(removeButton);
+
+            // Добавляем задачу в список
+            taskList.appendChild(newTask);
+            
+            // Сохраняем задачи в LocalStorage
+            saveTasksToLocalStorage();
+
+            // Очищаем поле ввода
+            taskInput.value = '';
+        }
+
+        // Функция для отметки задачи как выполненной
+        function toggleTaskCompletion(taskElement) {
+            taskElement.classList.toggle('completed');
+        }
+
+        // Функция удаления задачи
+        function removeTask(taskElement) {
+            taskElement.remove();
+            saveTasksToLocalStorage(); // Пересохраняем задачи после удаления
+        }
+
+        // Сохранение задач в LocalStorage
+        function saveTasksToLocalStorage() {
+            const tasks = [];
+            const taskListItems = document.querySelectorAll('li');
+            
+            taskListItems.forEach(task => {
+                tasks.push(task.innerHTML);
+            });
+
+            localStorage.setItem('tasks', JSON.stringify(tasks));
+        }
+
+        // Загрузка задач из LocalStorage
+        function loadTasksFromLocalStorage() {
+            const savedTasks = JSON.parse(localStorage.getItem('tasks'));
+            if (savedTasks) {
+                savedTasks.forEach(taskHTML => {
+                    const taskList = document.getElementById('taskList');
+                    const newTask = document.createElement('li');
+                    newTask.innerHTML = taskHTML;
+                    taskList.appendChild(newTask);
+                });
+            }
+        }
+
+        // Очистка всех задач
+        function clearAllTasks() {
+            const taskList = document.getElementById('taskList');
+            taskList.innerHTML = ''; // Очистить список
+            localStorage.removeItem('tasks'); // Удалить задачи из LocalStorage
+        }
+
+        // Переключение темы
+        function toggleTheme() {
+            const body = document.body;
+            body.classList.toggle('light-theme');
+            saveThemeToLocalStorage();
+        }
+
+        // Сохранение темы в LocalStorage
+        function saveThemeToLocalStorage() {
+            const isLightTheme = document.body.classList.contains('light-theme');
+            localStorage.setItem('isLightTheme', isLightTheme);
+        }
+
+        // Загрузка темы из LocalStorage
+        function loadThemeFromLocalStorage() {
+            const isLightTheme = JSON.parse(localStorage.getItem('isLightTheme'));
+            if (isLightTheme) {
+                document.body.classList.add('light-theme');
+            }
+        }
+
+        // Загружаем задачи и тему при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            loadTasksFromLocalStorage();
+            loadThemeFromLocalStorage();
+        });
+    </script>
+</body>
+</html>
